@@ -311,7 +311,7 @@ def vertical_profiles(dropdown_years_eng, dropdown_months_eng, dropdown_days_eng
         row=1, col=1
         )
     fig.add_trace(
-        go.Scatter(x=ozonosondes_data[dropdown_years_eng+'-'+dropdown_months_eng+'-'+str(dropdown_days_eng)].O3_mba, y=ozonosondes_data[dropdown_years_eng+'-'+dropdown_months_eng+'-'+str(dropdown_days_eng)].Alt,
+        go.Scatter(x=ozonosondes_data[dropdown_years_eng+'-'+dropdown_months_eng+'-'+str(dropdown_days_eng)].O3_mPa, y=ozonosondes_data[dropdown_years_eng+'-'+dropdown_months_eng+'-'+str(dropdown_days_eng)].Alt,
         line_color='blue',name='Sounding', legendgroup='Sounding'           
         ),  
         row=1, col=1

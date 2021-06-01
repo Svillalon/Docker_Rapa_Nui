@@ -77,6 +77,7 @@ dates_years = list(dates.keys())
 ###############################################################################
 ###################################Mapa
 ##############cosas del mapa
+
 fig = go.Figure(go.Scattergeo(lat=[-27.16], lon=[-109.43]))
 fig.update_geos(projection_type="orthographic", projection_rotation=dict(lon=-80, lat=-30), bgcolor='rgba(0,0,0,0)',
                 lataxis_showgrid=True, lonaxis_showgrid=True
@@ -87,11 +88,36 @@ fig.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0},
             paper_bgcolor='#f6f6f6')
 
 
+d = {'City':'Rapa Nui', 'lat' : -27.16, 'lon': -109.43 , 'State': 'Polinesia' ,'info': 'Observatorio Rapa Nui','MSL':157}
+cites = pd.DataFrame(data=d, index = [0])
+
+fig2 = px.scatter_mapbox(cites, lat="lat", lon="lon", hover_name="City", hover_data=["State", "info"],
+                        color_discrete_sequence=["black"], size='MSL' , size_max=12 ,zoom=7, height=300 )
+fig2.update_layout(
+    mapbox_style="white-bg",
+    mapbox_layers=[
+        {
+            "below": 'traces',
+            "sourcetype": "raster",
+            "sourceattribution": "United States Geological Survey",
+            "source": [
+                "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
+            ]
+        }
+      ])
+fig2.update_layout(margin={"r":10,"t":0,"l":10,"b":0})
+fig2.update_mapboxes(bearing=25, pitch = 60)
+
+
+
 ####### operaciones para descargas
 title=[i for i in table_data.columns if i!='Download_url']
 df_table=table_data.drop(['Download_url'], axis = 1)
 
+
 df_table['Download'] = pd.Series(html.A(html.P(str(i)), href=str(j)) for i,j in zip(table_data['Download'], table_data['Download_url']))
+
+
 
 ########
 
@@ -238,6 +264,10 @@ def render_content(tab, Switch_Lang):
                 html.Div([html.H1("Rapa Nui(27.16S, 109.43W, 41m)", style={'margin-left':'10px',
                                                                                      'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'})
                 ,dcc.Markdown(dedent(f'''
+                                     
+                Rapa Nui (27ºS, 109ºW, 51 m a.s.l.) is influenced year-around by the eastern edge of the Pacific high resulting in to easterly and southeasterly boundary layer winds. Precipitation is generally convective in connection with the nearness of the South Pacific Convergence Zone (SPCZ). Precipitation also occurs in connection with mid-latitude disturbances and deep trough passages. Another prominent circulation feature affecting Rapa Nui is the subtropical jet stream (STJ), and its variability along the year. The main subsidence area associated with the subtropical high is located in between Rapa Nui and Western South America. Subsidence associated with the subtropical high peaks in summer, and it is suppressed in fall when the SPCZ reaches the island. Although weaker than in summer, subsidence also prevails in winter and spring. The STJ remains stationary over the island between fall and spring. A convective signature is found along the year, but it is particularly important in fall and winter. El Niño Southern Oscillation (ENSO) explains a significant part of the variability referred to above is linked to changes in atmospheric circulation due ENSO. The Pacific Decadal Oscillation (PDO) also affects weather and climate over Rapa Nui. 
+                The seasonally averaged soundings indicate a fall minimum and a late spring maximum in ozone in the upper troposphere. The former occurs as the SPCZ approaches the island. The latter is suggestive of stratosphere-troposphere-exchange linked to the strength of the subtropical high and the nearness of the STJ in late winter and spring, allowing downward transport of stratospheric O3 present above 200 hPa. Occasionally, mid-latitude disturbances reach Rapa Nui inducing tropopause breaks and intrusions of stratospheric ozone. In the lower troposphere, extremes are found in summer and winter and they appear to be modulated by changes in insolation and static stability, showing larger ozone mixing ratios in winter than in summer. 
+                Anthropogenic climate change, and the expansion of the Hadley cell is expected to affect the underlying dynamics that explain stratosphere-troposphere exchange affecting ozone profile. Also, there is evidence of increasing ozone trends near the surface that might be explained in part by the increase of anthropogenic activities on Rapa Nui. Hence, the remote location of Rapa Nui provides a unique and privileged position to observe global change, and to verify satellite borne measurements and modeling.
 
                 Principal Investigators: Laura Gallardo, Carmen Vega        
                 Emails: [lgallard@u.uchile.cl](mailto:lgallard@u.uchile.cl), [carmen.vega@dgac.gob.cl](mailto:carmen.vega@dgac.gob.cl)
@@ -268,20 +298,39 @@ def render_content(tab, Switch_Lang):
                 html.Div([
                                           html.Img(src='data:image/png;base64,{}'.format(encoded_image_tololo), 
                                    style={'height':'45%', 'width':'450px','margin-right':'75px' ,'margin-left':'75px', 'margin-top':'75px', 'border': '0px solid #0668a1', 'border-radius': '10px'}), 
-                                    dcc.Markdown(dedent(f'''Ozone climatology for Rapa Nui. Island location and photograph of Motu Nui and Motu Iti as seen from Orongo on the Rano Kau volcano, 
+                                    dcc.Markdown(dedent(f'''
+                                                        Ozone climatology for Rapa Nui. Island location and photograph of Motu Nui and Motu Iti as seen from Orongo on the Rano Kau volcano, 
+                                                        
                                                         around 280 meters above sea level. Looking southwest. Photograph 2003 by Macarena San Martín'''), 
                                                  style={'font-size':'8px', 'margin-left':'75px'}),
                                     html.H1("Map", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}), 
-                                    dcc.Graph(figure=fig)], 
+                                    dcc.Graph(figure=fig) , 
+                                    html.H1("Interactive map", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),                                     
+                                    dcc.Graph(figure=fig2)], 
                                     
                                      style={'display': 'inline-block', 'float':'right', 'width': '50%'})
-                                                 ])]
+                                                 ], style={'backgroundColor': '#f6f6f6', 'height':'700px'})]
 #################################################Informacion en Español#####################################                              
         elif Switch_Lang==True:
             return[
                 html.Div([
                 html.Div([html.H1("Rapa Nui (27.16S, 109.43W, 41m)", style={'margin-left':'50px','text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
                              dcc.Markdown(dedent(f'''
+                                                 
+                Rapa Nui (27ºS, 109ºW, 51 m s.n.m.) está influenciado durante todo el año por el borde oriental del Pacífico, lo que resulta en vientos de la capa límite del este y sureste. La precipitación es 
+                generalmente convectiva en relación con la proximidad de la Zona de Convergencia del Pacífico Sur (SPCZ). La precipitación también ocurre en relación con perturbaciones de latitudes medias y pasajes 
+                de vaguadas profundas. Otra característica de circulación prominente que afecta a Rapa Nui es la corriente en chorro subtropical (STJ) y su variabilidad a lo largo del año. El área de hundimiento principal 
+                asociada con el alto subtropical se encuentra entre Rapa Nui y el oeste de América del Sur. Subsidencia asociada con los picos subtropicales altos en verano, y se suprime en otoño cuando la SPCZ llega a la isla. Aunque 
+                más débil que en verano, el hundimiento también prevalece en invierno y primavera. El STJ permanece estacionario sobre la isla entre el otoño y la primavera. Se encuentra una firma convectiva a lo largo del año, pero es 
+                particularmente importante en otoño e invierno. El Niño Oscilación del Sur (ENOS) explica que una parte significativa de la variabilidad mencionada anteriormente está vinculada a cambios en la circulación atmosférica debido 
+                al ENOS. La Oscilación Decadal del Pacífico (DOP) también afecta el clima y el clima en Rapa Nui. Los sondeos promediados estacionalmente indican un mínimo de otoño y un máximo de finales de primavera en el ozono en la troposfera 
+                superior. Lo primero ocurre cuando la SPCZ se acerca a la isla. Esto último sugiere un intercambio estratosfera-troposfera vinculado a la fuerza del alto subtropical y la proximidad del STJ a fines del invierno y la primavera, lo que 
+                permite el transporte descendente del O3 estratosférico presente por encima de 200 hPa. Ocasionalmente, las perturbaciones de latitudes medias llegan a Rapa Nui provocando rupturas de la tropopausa e intrusiones de ozono estratosférico. 
+                En la troposfera inferior, los extremos se encuentran en verano e invierno y parecen estar modulados por cambios en la insolación y la estabilidad estática, mostrando mayores proporciones de mezcla de ozono en invierno que en verano. 
+                Se espera que el cambio climático antropogénico y la expansión de la célula de Hadley afecten la dinámica subyacente que explica el intercambio estratosfera-troposfera que afecta el perfil del ozono. Además, hay evidencia de tendencias 
+                crecientes del ozono cerca de la superficie que podrían explicarse en parte por el aumento de las actividades antropogénicas en Rapa Nui. Por lo tanto, la ubicación remota de Rapa Nui proporciona una posición única y privilegiada para observar 
+                el cambio global y verificar las mediciones y modelos satelitales.
+                
                 Investigadoras Principales: Laura Gallardo, Carmen Vega        
                 Emails: [lgallard@u.uchile.cl](mailto:lgallard@u.uchile.cl), [carmen.vega@dgac.gob.cl](mailto:carmen.vega@dgac.gob.cl)
                 
@@ -296,23 +345,27 @@ def render_content(tab, Switch_Lang):
                 Email: [sebastian.villalon@ug.uchile.cl](mailto:sebastian.villalon@ug.uchile.cl)
                 Av. Blanco Encalada 2002, Santiago, Chile
                 
-                Data Disclaimer: These data have been collected at Rapa Nui by the Chilean Weather Office (DMC) under the auspices of the Global Atmospheric Watch (GAW) Programme of the World Meteorological Organization (WMO).
+                Descargo de responsabilidad sobre los datos: estos datos han sido recopilados en Tololo por la Oficina Meteorológica de Chile (DMC) bajo los auspicios del Programa de Vigilancia Atmosférica Global (GAW) de la Organización Meteorológica Mundial (OMM).
 
-                The data on this website are subject to revision and reprocessing. Check dates of creation to download the most current version.
+                Los datos de este sitio web están sujetos a revisión y reprocesamiento. Consulta las fechas de creación para descargar la versión más actual.
     
-                Contact the station principal investigator(s) for questions concerning data techniques and quality.
-                
+                Comuníquese con el investigador principal de la estación si tiene preguntas sobre las técnicas y la calidad de los datos.
+
                 '''), style={'margin-left':'60px'})] ,  
                 style={'color': 'black', 'width':'50%','fontFamily': '"Times New Roman"'
                                                     ,'backgroundColor': '#f6f6f6', 'display': 'inline-block', 'margin-top':'50px', 'border-right': '2px solid #0668a1'}), 
                 html.Div([
                                           html.Img(src='data:image/png;base64,{}'.format(encoded_image_tololo), 
                                    style={'height':'45%', 'width':'450px','margin-right':'75px' ,'margin-left':'75px', 'margin-top':'75px', 'border': '0px solid #0668a1', 'border-radius': '10px'}), 
-                                    dcc.Markdown(dedent(f'''Ozone climatology for Rapa Nui. Island location and photograph of Motu Nui and Motu Iti as seen from Orongo on the Rano Kau volcano, 
+                                    dcc.Markdown(dedent(f'''
+                                                        Ozone climatology for Rapa Nui. Island location and photograph of Motu Nui and Motu Iti as seen from Orongo on the Rano Kau volcano, 
+                                                        
                                                         around 280 meters above sea level. Looking southwest. Photograph 2003 by Macarena San Martín'''), 
                                                  style={'font-size':'8px', 'margin-left':'75px'}),
                                     html.H1("Mapa", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}), 
-                                    dcc.Graph(figure=fig)],
+                                    dcc.Graph(figure=fig),
+                                    html.H1("Mapa Interactivo", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),                                     
+                                    dcc.Graph(figure=fig2)],                                                  
                                      style={'display': 'inline-block', 'float':'right', 'width': '50%', 'backgroundColor': '#f6f6f6'})
                                           ], style={'backgroundColor': '#f6f6f6', 'height':'700px'})]
 #####################################################################################
@@ -578,55 +631,199 @@ def render_content(tab, Switch_Lang):
                 ], style={'padding':'100px'})
     elif tab == 'tab-4':
         if Switch_Lang==False:
-            return [html.Div([html.H1("Lamsal", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
-                              
-                dcc.Markdown(dedent(f'''
-                Las tendencias lineales en estos compuestos se calcularon utilizando un modelo de regresión de Fourier según (Lamsal et al., 2015; Tiao et al., 1990) 
-                para estimar las componentes estacionales y lineales en las observaciones de Ozono . 
-                De acuerdo a (Lamsal et al., 2015), al suponer que la serie temporal de los valores medios mensuales en las observaciones de ozono en Tololo esta 
-                compuesta por tres sub-componentes aditivos, podemos descomponer nuestra regresión como:
-                    <p> &Omega; =  &alpha; (t) + bt + R(t)  </p>
-                Donde (\u03A9) es la componente estacional dependiente del tiempo (t), (b) una componente de tendencia lineal y (R) un residuo o ruido. 
-                Así se puede estimar la mayoría de las curvas para los contaminantes atmosféricos al definir \u03B1(t) como una serie de Fourier con 
-                coeficientes n<sub>j<sub> y m<sub>j<sub> para una cantidad de datos j, como:  
-                    
-                Entonces dichas magnitudes representadas por la componente en la tendencia lineal (b) permitirán cuantificar la evolución en la concentraciones 
-                de los contaminantes analizados. El error en la regresión es calculado según (Tiao et al., 1990), al cual es obtenido mediante una función 
-                no lineal dependiente de la autocorrelación y el número total de datos.    
+            return [html.Div([
                 
-                '''), style={'margin-left':'60px'})
-            ], style={'width':'50%', 'display':'inline-block', 'margin-top':'50px'}), 
-                                    html.Div([
-                html.H1("Artículos", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
+                html.H1("Data", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
+                             
+#                html.P(children='$$ \lim_{t \\rightarrow \infty} \pi = 0$$'), 
+               dcc.Markdown(dedent(f''' 
+                        The data shown in this platform corresponds to the set collected between August 1994 and 2019 by DMC consists of 294 soundings. These soundings provide information 
+                        on ozone, air pressure, temperature, dew point, and relative humidity from the surface to the lower stratosphere (30-35 km). Since 1999, wind speed and direction were added 
+                        to the collection. These data are available at World Ozone and Ultraviolet Radiation Data Centre (WOUDC, http://www.woudc.org/).
+                        
+                        The O3 sensor used is the so-called Electrochemical Concentration Cell (ECC). The measuring principle is based on the titration of ozone in a potassium iodide (KI) sensing 
+                        solution. A Science Pump Corporation (SPC) type of ECC ozonesonde instrument is used at Rapa Nui. The sensing solution KI strength is 1%, with 100% buffer. The ECC sonde is 
+                        launched with a Väisälä RS92 radiosonde. Between 1995 and 1997, an OS815N sensor was used, thereafter, a CCE64B was utilized.             '''), 
+                
+                style={'margin-left':'60px'}) ,
+                
+                html.H1("Quality assurance and quality control", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
+                             
+#                html.P(children='$$ \lim_{t \\rightarrow \infty} \pi = 0$$'), 
+               dcc.Markdown(dedent(f''' 
+                                   We carried out a careful visual inspection of all soundings available. Each sounding was reviewed trying to identify anomalous values, instrument malfunctioning, 
+                                   etc. We used concurrent standard meteorological soundings to support the inspection of ozone soundings. We only excluded soundings that seemed to us evidently anomalous. 
+                                   The number of analyzed and selected soundings per year and season are shown in Table 1. Once the cleansing and review process was completed, we linearly interpolated all soundings every 100 m. 
+                                   A few soundings (5) were only available for mandatory pressure levels in 2012.                '''), 
+                
+                style={'margin-left':'60px'}) ,
+#                 html.H1("Back trajectories", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
+                             
+# #                html.P(children='$$ \lim_{t \\rightarrow \infty} \pi = 0$$'), 
+#                 dcc.Markdown(dedent(f'''
+#                                     Not available                '''), 
+                
+#                  style={'margin-left':'60px'}) ,
+
+                html.H1("Back trajectories", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
+                             
+#                html.P(children='$$ \lim_{t \\rightarrow \infty} \pi = 0$$'), 
+               dcc.Markdown(dedent(f'''
+                We use reanalysis data sets from National Centers for Environmental Prediction/Atmospheric Research (NCEP/NCAR) to characterize the large-scale meteorological features affecting Rapa Nui. 
+                We use three-dimensional (3-D) wind fields every six hours to calculate seven-day back trajectories for each ozone sonde.Trajectories were initialized at sounding launch time for 3 initial heights, 4, 8 and 12 km 
+                above mean sea level. For this purpose, we apply the Hybrid Single Particle Lagrangian Integrated Trajectory (HYSPLIT) model.                 '''), 
+                
+                style={'margin-left':'60px'}),
+
+
+                html.H1("Trends", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
+                             
+#                html.P(children='$$ \lim_{t \\rightarrow \infty} \pi = 0$$'), 
+               dcc.Markdown(dedent(f'''
+                Trends were calculated using several methods found in the literature. These methods are summarized below:
+
+                                                   
+                **STL:**
+                This method  (Cleveland et al. 1990) of decomposing signals uses Loess techniques to generate local smoother functions. Then by decoupling the seasonality and separating the noise obtaining a monotonic function for the trend. Cleveland et al. 1990 
+               
+                **EMD**
+                In this method (Huang et al. 1998), the signal is decomposed as a superposition of local sums of oscillatory components called Intrinsic Mode Functions (IMF). The IMF modes added to a function without oscillatory components reconstruct the original signal. 
+                
+                **Lamsal-Fourier:**
+                This method (Lamsal et al. 2015) uses a multilinear regression model based on harmonic functions (Fourier regression) to determine the components in the linear trends.                
+
+                **Thiel Sen:**
+                In the Theil-Sen method (Theil 1992, Sen 1960), multiple slopes are calculated to select the final slope as the median of all these
+                '''), 
+                
+                style={'margin-left':'60px'})
+                
+                ], style={'width':'50%', 'display':'inline-block', 'margin-top':'50px'}), 
+                                                                html.Div([
+                html.H1("Paper Rapa Nui", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
                 dcc.Markdown(dedent(f'''
-              Gallardo, L., HenríQuez, A., Thompson, A. M., Rondanelli, R., Carrasco, J., Orfanoz-Cheuquelaf, A., et al. (2016). The first twenty years (1994-2014) of ozone soundings from Rapa Nui (27°S, 109°W, 51m a.s.l.). Tellus, Ser. B Chem. Phys. Meteorol. 68, 29484. doi:10.3402/tellusb.v68.29484.
-                '''), style={'margin-left':'60px'})
+
+                Calderón, J. and Fuenzalida, H. 2014. Radiación ultravioleta en Isla de Pascua: factores climáticos y ozono total. Stratus 2, 8. Revista de la Dirección Meteorológica de Chile. ISSN 0719-4544
+
+                Gallardo, L., Henríquez, A., Thompson, A. M., Rondanelli, R., Carrasco, J., Orfanoz-Cheuquelaf, A., et al. (2016). The first twenty years (1994-2014) of ozone soundings from Rapa Nui (27°S, 109°W, 51m a.s.l.). Tellus, Ser. B Chem. Phys. Meteorol. 68, 29484. doi:10.3402/tellusb.v68.29484.
+                
+                
+               '''), style={'margin-left':'60px'}) ,
+                
+               html.H1("Paper Trend", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
+                dcc.Markdown(dedent(f'''
+
+                Cleveland, R., Cleveland, W., of official, J.M.J., undefined 1990,
+                1990. STL: A seasonal-trend decomposition. nniiem.ru URL: http:
+                //www.nniiem.ru/file/news/2016/stl-statistical-model.pdf .
+                                    
+                Huang, N.E., Shen, Z., Long, S.R., Wu, M.C., Snin, H.H., Zheng, Q., Yen, N.C., Tung, C.C., Liu, H.H., 1998. The empirical mode decom- position and the Hubert spectrum for nonlinear and non-stationary time series analysis. Proceedings of the Royal Society A: Mathemat- ical, Physical and Engineering Sciences 454, 903–995. doi: 10.1098/rspa.1998.0193 .
+                
+                
+                Lamsal, L.N., Duncan, B.N., Yoshida, Y., Krotkov, N.A., Pickering,K.E., Streets, D.G., Lu, Z., 2015. U.S. NO2 trends (2005–2013): EPA Air Quality System (AQS) data versus improved observations from the Ozone Monitoring Instrument (OMI). Atmospheric Environment 110, 130–143. URL: http://linkinghub.elsevier.com/re
+                
+                
+                Sen, P.K., 1960. On Some Convergence Properties of U-Statistics. Calcutta Statistical Association Bulletin 10, 1–18. URL:https://journals.sagepub.com/doi/abs/10.1177/00
+               '''), style={'margin-left':'60px'})
+               
                 ], style={'margin-top':'50px','display':'inline-block','float':'right' ,'width':'50%'})
+                  
                                     ]
         if Switch_Lang==True:        
-            return [html.Div([html.H1("Lamsal", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
-                              
-                dcc.Markdown(dedent(f'''
-                Las tendencias lineales en estos compuestos se calcularon utilizando un modelo de regresión de Fourier según (Lamsal et al., 2015; Tiao et al., 1990) 
-                para estimar las componentes estacionales y lineales en las observaciones de Ozono . 
-                De acuerdo a (Lamsal et al., 2015), al suponer que la serie temporal de los valores medios mensuales en las observaciones de ozono en Tololo esta 
-                compuesta por tres sub-componentes aditivos, podemos descomponer nuestra regresión como:
-                    <p> &Omega; =  &alpha; (t) + bt + R(t)  </p>
-                Donde (\u03A9) es la componente estacional dependiente del tiempo (t), (b) una componente de tendencia lineal y (R) un residuo o ruido. 
-                Así se puede estimar la mayoría de las curvas para los contaminantes atmosféricos al definir \u03B1(t) como una serie de Fourier con 
-                coeficientes n<sub>j<sub> y m<sub>j<sub> para una cantidad de datos j, como:  
-                    
-                Entonces dichas magnitudes representadas por la componente en la tendencia lineal (b) permitirán cuantificar la evolución en la concentraciones 
-                de los contaminantes analizados. El error en la regresión es calculado según (Tiao et al., 1990), al cual es obtenido mediante una función 
-                no lineal dependiente de la autocorrelación y el número total de datos.    
+            return [html.Div([
+
+                html.H1("Datos", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
+                             
+#                html.P(children='$$ \lim_{t \\rightarrow \infty} \pi = 0$$'), 
+               dcc.Markdown(dedent(f''' 
+                        Los datos mostrados en esta plataforma corresponden al conjunto recolectado entre agosto de 1994 y 2019 por DMC compuesto por 294 sondeos de O3. Estos sondeos proporcionan información
+                        sobre el ozono, la presión del aire, la temperatura, el punto de rocío y la humedad relativa desde la superficie hasta la estratosfera inferior (30-35 km). Desde 1999, se agregaron la velocidad y la dirección del viento
+                        a la colección. Estos datos están disponibles en el Centro mundial de datos sobre el ozono y la radiación ultravioleta (WOUDC, http://www.woudc.org/).
+                        
+                        El sensor de O3 utilizado es la llamada celda de concentración electroquímica (ECC). El principio de medición se basa en la valoración del ozono en un sensor de yoduro de potasio (KI)
+                        solución. En Rapa Nui se utiliza un instrumento de sonda de ozono ECC de Science Pump Corporation (SPC). La concentración de KI de la solución de detección es del 1%, con tampón al 100%. La sonda ECC es
+                        lanzado con una radiosonda Väisälä RS92. Entre 1995 y 1997, se utilizó un sensor OS815N, a partir de entonces, se utilizó un CCE64B. '''),                
+                style={'margin-left':'60px'}) ,
                 
-                '''), style={'margin-left':'60px'})
-            ], style={'width':'50%', 'display':'inline-block', 'margin-top':'50px'}), 
-                                    html.Div([
-                html.H1("Artículos", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
+                html.H1("Control de calidad de datos", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
+                             
+#                html.P(children='$$ \lim_{t \\rightarrow \infty} \pi = 0$$'), 
+               dcc.Markdown(dedent(f''' 
+                                    Nosotros realizamos una cuidadosa inspección visual de todos los sondeos disponibles. Cada sondeo fue revisado tratando de identificar valores anómalos, mal funcionamiento del instrumento,
+                                    etc. Usamos sondeos meteorológicos estándar concurrentes para apoyar la inspección de sondeos de ozono. Solo excluimos los sondeos que nos parecían evidentemente anómalos.
+                                    El número de sondeos analizados y seleccionados por año y temporada se muestra en la Tabla 1. Una vez que se completó el proceso de limpieza y revisión, interpolamos linealmente todos los sondeos cada 100 m.
+                                    Algunos sondeos (5) solo estaban disponibles para niveles de presión obligatorios en 2012.             '''), 
+                
+                style={'margin-left':'60px'}) ,
+#                 html.H1("Back trajectories", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
+                             
+# #                html.P(children='$$ \lim_{t \\rightarrow \infty} \pi = 0$$'), 
+#                 dcc.Markdown(dedent(f'''
+#                                     Not available                '''), 
+                
+#                  style={'margin-left':'60px'}) ,
+
+                html.H1("Seguimiento de trajectorias", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
+                             
+#                html.P(children='$$ \lim_{t \\rightarrow \infty} \pi = 0$$'), 
+               dcc.Markdown(dedent(f'''
+                Utilizamos conjuntos de datos de reanálisis de los Centros Nacionales de Predicción Ambiental / Investigación Atmosférica (NCEP / NCAR) para caracterizar las características meteorológicas a gran escala que afectan a Rapa Nui.
+                 Usamos campos de viento tridimensionales (3-D) cada seis horas para calcular las trayectorias de retroceso de siete días para cada sonda de ozono. Las trayectorias se inicializaron en el momento del lanzamiento del sondeo para 3 alturas iniciales, 4, 8 y 12 km.
+                 sobre el nivel medio del mar. Para ello, aplicamos el modelo de Trayectoria Integrada Lagrangiana Híbrida de Partícula Única (HYSPLIT, por su sigla en ingles). '''), 
+
+                style={'margin-left':'60px'}),
+
+                html.H1("Tendencias", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
+                             
+#                html.P(children='$$ \lim_{t \\rightarrow \infty} \pi = 0$$'), 
+               dcc.Markdown(dedent(f'''
+                Trends were calculated using several methods found in the literature. These methods are summarized below:
+
+                                                   
+                **STL:**
+                This method  (Cleveland et al. 1990) of decomposing signals uses Loess techniques to generate local smoother functions. Then by decoupling the seasonality and separating the noise obtaining a monotonic function for the trend. Cleveland et al. 1990 
+               
+                **EMD**
+                In this method (Huang et al. 1998), the signal is decomposed as a superposition of local sums of oscillatory components called Intrinsic Mode Functions (IMF). The IMF modes added to a function without oscillatory components reconstruct the original signal. 
+                
+                **Lamsal-Fourier:**
+                This method (Lamsal et al. 2015) uses a multilinear regression model based on harmonic functions (Fourier regression) to determine the components in the linear trends.                
+
+                **Thiel Sen:**
+                In the Theil-Sen method (Theil 1992, Sen 1960), multiple slopes are calculated to select the final slope as the median of all these
+                '''), 
+                
+                style={'margin-left':'60px'})
+                
+                ], style={'width':'50%', 'display':'inline-block', 'margin-top':'50px'}), 
+                                                                html.Div([
+                html.H1("Artículos Rapa Nui", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
                 dcc.Markdown(dedent(f'''
-               Gallardo, L., HenríQuez, A., Thompson, A. M., Rondanelli, R., Carrasco, J., Orfanoz-Cheuquelaf, A., et al. (2016). The first twenty years (1994-2014) of ozone soundings from Rapa Nui (27°S, 109°W, 51m a.s.l.). Tellus, Ser. B Chem. Phys. Meteorol. 68, 29484. doi:10.3402/tellusb.v68.29484.
-                '''), style={'margin-left':'60px'})
+
+                Calderón, J. and Fuenzalida, H. 2014. Radiación ultravioleta en Isla de Pascua: factores climáticos y ozono total. Stratus 2, 8. Revista de la Dirección Meteorológica de Chile. ISSN 0719-4544
+
+                Gallardo, L., Henríquez, A., Thompson, A. M., Rondanelli, R., Carrasco, J., Orfanoz-Cheuquelaf, A., et al. (2016). The first twenty years (1994-2014) of ozone soundings from Rapa Nui (27°S, 109°W, 51m a.s.l.). Tellus, Ser. B Chem. Phys. Meteorol. 68, 29484. doi:10.3402/tellusb.v68.29484.
+                
+                
+               '''), style={'margin-left':'60px'}) ,
+                
+               html.H1("Artículos Tendencia", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),
+                dcc.Markdown(dedent(f'''
+
+                Cleveland, R., Cleveland, W., of official, J.M.J., undefined 1990,
+                1990. STL: A seasonal-trend decomposition. nniiem.ru URL: http:
+                //www.nniiem.ru/file/news/2016/stl-statistical-model.pdf .
+                                    
+                Huang, N.E., Shen, Z., Long, S.R., Wu, M.C., Snin, H.H., Zheng, Q., Yen, N.C., Tung, C.C., Liu, H.H., 1998. The empirical mode decom- position and the Hubert spectrum for nonlinear and non-stationary time series analysis. Proceedings of the Royal Society A: Mathemat- ical, Physical and Engineering Sciences 454, 903–995. doi: 10.1098/rspa.1998.0193 .
+                
+                
+                Lamsal, L.N., Duncan, B.N., Yoshida, Y., Krotkov, N.A., Pickering,K.E., Streets, D.G., Lu, Z., 2015. U.S. NO2 trends (2005–2013): EPA Air Quality System (AQS) data versus improved observations from the Ozone Monitoring Instrument (OMI). Atmospheric Environment 110, 130–143. URL: http://linkinghub.elsevier.com/re
+                
+                
+                Sen, P.K., 1960. On Some Convergence Properties of U-Statistics. Calcutta Statistical Association Bulletin 10, 1–18. URL:https://journals.sagepub.com/doi/abs/10.1177/00
+               '''), style={'margin-left':'60px'})
+
+                    
                 ], style={'margin-top':'50px','display':'inline-block','float':'right' ,'width':'50%'})]                        
     
 ################################# dropdown dinamicos##########################

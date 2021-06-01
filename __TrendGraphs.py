@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Wed Apr  7 21:05:58 2021
@@ -75,7 +74,7 @@ def tendencia(radio_tendencia, radio_altura, ozonosondes_data):
                     y= [57 , 57] , #df_m[0:1]*2.0
                     mode='text', 
                     marker=dict(size= 6, color='black'),
-                    text=["Tendencia Decadal= " + str(round(model_trend[1]*10*12,1)) + ' +/- xx [ppbv]  <br>Promedio= '+ str(round(df_m["O3_ppbv"].mean(),1)) + " [ppbv]"],
+                    text=["Tendencia Decadal= " + str(round(model_trend[1]*10*12,1)) + 'ppbv  Promedio= '+ str(round(df_m["O3_ppbv"].mean(),1)) + " [ppbv]"],
                     textposition="top right",
                     textfont=dict(
                     family="Times New Roman",
@@ -145,7 +144,7 @@ def trend(radio_trend, radio_height, ozonosondes_data):
                     y= [57 , 57] , #df_m[0:1]*2.0
                     mode='text', 
                     marker=dict(size= 6, color='black'),
-                    text=["Decadal Trend= " + str(round(model_trend[1]*10*12,1)) + ' +/- xx [ppbv]  <br>Promedio= '+ str(round(df_m["O3_ppbv"].mean(),1)) + " [ppbv]"],
+                    text=["Decadal Trend= " + str(round(model_trend[1]*10*12,1)) + 'ppbv   Promedio= '+ str(round(df_m["O3_ppbv"].mean(),1)) + " [ppbv]"],
                     textposition="top right",
                     textfont=dict(
                     family="Times New Roman",
