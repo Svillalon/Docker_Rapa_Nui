@@ -47,13 +47,15 @@ trajgroup = pysplit.make_trajectorygroup(fn)
 # Make dataframe for to save all trajectories in one file .csv
 dfold = pd.DataFrame()
 
+# Year of correction to fix trajectory date
+yr_correc = 2020
 
 # For every trajectory, make a dataframe and add to dfold
 for traj in trajgroup:
     
     # Correct datetime for trajectories release before 2000
     datetime = pd.Index(traj.data.DateTime)
-    if datetime[0].year > 2019:
+    if datetime[0].year > yr_correc:
         datetime = pd.to_datetime(datetime.strftime('%y %m %d %H'))
     
     # Extract lon, lat and altitude from data

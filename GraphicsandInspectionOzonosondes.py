@@ -63,7 +63,7 @@ def plot_sonde(df, date, station, save=False, path_to_save=None):
     fig.subplots_adjust(left=0.08, right=0.98, bottom=0.08, top=0.84, wspace=0.15)
     
     # Ozone Partial Pressure
-    ax1.plot(O3, z, color='b', marker='.', markersize=1, linestyle='-', linewidth=0.3)
+    ax1.plot(O3[~np.isnan(O3)], z[~np.isnan(O3)], color='b', marker='.', markersize=1, linestyle='-', linewidth=0.3)
     ax1.set_ylim(ymin=0, ymax=40)
     ax1.set_xlim(xmin=0, xmax=28)
     ax1.yaxis.set_minor_locator(MultipleLocator(1))
@@ -75,7 +75,7 @@ def plot_sonde(df, date, station, save=False, path_to_save=None):
     
     # Temperature
     ax1_2 = ax1.twiny()
-    ax1_2.plot(Temp, z, color='r', marker='.', markersize=1, linestyle='-', linewidth=0.3)
+    ax1_2.plot(Temp[~np.isnan(Temp)], z[~np.isnan(Temp)], color='r', marker='.', markersize=1, linestyle='-', linewidth=0.3)
     ax1_2.set_xlim(xmin=190, xmax=310)
     ax1_2.set_xticks(np.arange(190, 311, 30))
     ax1_2.set_xlabel('Temperature [K]', color='r')
@@ -84,7 +84,7 @@ def plot_sonde(df, date, station, save=False, path_to_save=None):
     
     
     # Relative Humidity
-    ax2.plot(HR, z, color='b', marker='.', markersize=1, linestyle='-', linewidth=0.3)
+    ax2.plot(HR[~np.isnan(HR)], z[~np.isnan(HR)], color='b', marker='.', markersize=1, linestyle='-', linewidth=0.3)
     ax2.set_xlim(xmin=0, xmax=100)
     ax2.set_xlabel(r'Relative Humidity [%]', color='b')
     ax2.spines['bottom'].set_color('b')
@@ -92,7 +92,7 @@ def plot_sonde(df, date, station, save=False, path_to_save=None):
     
     # Pressure
     ax2_2 = ax2.twiny()
-    ax2_2.plot(Pres, z, color='r', marker='.', markersize=1, linestyle='-', linewidth=0.3)
+    ax2_2.plot(Pres[~np.isnan(Pres)], z[~np.isnan(Pres)], color='r', marker='.', markersize=1, linestyle='-', linewidth=0.3)
     ax2_2.set_xlim(xmin=1, xmax=1025)
     ax2_2.set_xscale('log')
     ax2_2.set_xticks([1, 10, 100, 1000])
@@ -103,7 +103,7 @@ def plot_sonde(df, date, station, save=False, path_to_save=None):
     
     
     # Wind Speed
-    ax3.plot(WSpd, z, color='b', marker='.', markersize=1, linestyle='-', linewidth=0.3)
+    ax3.plot(WSpd[~np.isnan(WSpd)], z[~np.isnan(WSpd)], color='b', marker='.', markersize=1, linestyle='-', linewidth=0.3)
     ax3.set_xlim(xmin=0, xmax=80)
     ax3.set_xticks(np.arange(0, 81, 20))
     ax3.set_xlabel(r'Wind Speed [m/s]', color='b')
@@ -112,7 +112,7 @@ def plot_sonde(df, date, station, save=False, path_to_save=None):
     
     # Wind Direction
     ax3_2 = ax3.twiny()
-    ax3_2.plot(WDir, z, color='r', marker='.', markersize=1, linestyle='-', linewidth=0.3)
+    ax3_2.plot(WDir[~np.isnan(WDir)], z[~np.isnan(WDir)], color='r', marker='.', markersize=1, linestyle='-', linewidth=0.3)
     ax3_2.set_xlim(xmin=0, xmax=360)
     ax3_2.set_xticks(np.arange(0, 361, 90))
     ax3_2.set_xlabel(r'Wind Direction [°]', color='r')
@@ -163,8 +163,8 @@ dates = dfold.index.drop_duplicates()
 station = 'Rapa Nui'
 
 # years to be plotted
-yi = 1995
-yf = 2019
+yi = 1994
+yf = 2020
 
 # Iterations for make plots per launch
 for date in dates:

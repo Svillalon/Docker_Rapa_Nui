@@ -153,8 +153,8 @@ def lamsal_trend(s):
     
     t = np.arange(len(s))
     x, flag = leastsq(residuals, x0, args=(s, t))
-    y = model(t,x)
-#    y = x[0] + x[1]*t 
+#   y = model(t,x)
+    y = x[0] + x[1]*t 
     trend = x[1]*1.03
     
     return y , trend

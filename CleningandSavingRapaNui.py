@@ -20,6 +20,8 @@ Saved variables:
     Column ozone [DU]
     Zonal wind [m/s]
     Meridional wind [m/s]
+    Wind Speed [m/s]
+    Wind Direction [°]
     Potential temperature [K]
     Equivalent potential temperature [K]
     Water vapor mixing ratio [g/kg]
@@ -59,7 +61,7 @@ def remov_desc(df):
     z = df.GPHeight.values
     
     # Find z decreasing
-    i_zasc = []
+    i_zasc = [0]
     zant = z[0]
     for i in range(1,len(z)):
         if z[i] > zant:
@@ -75,7 +77,8 @@ def remov_desc(df):
 
 
 
-def ozone_column(pO3, pressure, z, z_intp, type_intp='linear', prof_val=0,  Hinf=[], Hsup=[]):
+def ozone_column(pO3, pressure, z, z_intp, type_intp='linear', prof_val=0,  
+                 Hinf=[], Hsup=[], dHmax = 0.3):
     """
     Calculate ozone column profile and interpolate to regular altitudes in array z. 
     Return profile with nan's if serie does not validate. If it is validate and Hinf 
@@ -106,6 +109,9 @@ def ozone_column(pO3, pressure, z, z_intp, type_intp='linear', prof_val=0,  Hinf
     Hsup: list
         Contains upper limit of atmospheric layers does not validate in [km]. By
         default is []
+    dHmax: float
+        Maximum atmospheric layer depth, in km, to interpolate with missing data
+
 
     Returns
     -------
@@ -123,8 +129,6 @@ def ozone_column(pO3, pressure, z, z_intp, type_intp='linear', prof_val=0,  Hinf
     
     
     # If profile is validated, to interpolate data
-    # Max Depth to ignore in interpolation
-    dHmax = 1
     
     # copy original data to interpolate
     z_cp = z.copy()
@@ -169,14 +173,15 @@ def ozone_column(pO3, pressure, z, z_intp, type_intp='linear', prof_val=0,  Hinf
 
 
 
-def interp_serie(z_intp, z, serie, type_intp='linear', prof_val=0, Hinf=[], Hsup=[]):
+def interp_serie(z_intp, z, serie, type_intp='linear', prof_val=0, Hinf=[], 
+                 Hsup=[], dHmax = 0.3):
     """
     Interpolate vertical profiles to regular altitudes in array z. Return
     profile with nan's if serie does not validate. If it is validate and Hinf 
     and Hsup are not [], there are 2 posibilities:
-        - If atmospheric layer depth is less than dHmax (by defeault = 1 km), 
+        - If atmospheric layer depth is less than dHmax (by defeault = 0.3 km), 
           points inside this layer don't be considerated for interpolation
-        - If atmospheric layer depth is greater than dHmax (by defeault = 1 km), 
+        - If atmospheric layer depth is greater than dHmax (by defeault = 0.3 km), 
           points inside this layer are set to nan's.
 
     Parameters
@@ -198,6 +203,8 @@ def interp_serie(z_intp, z, serie, type_intp='linear', prof_val=0, Hinf=[], Hsup
     Hsup: list
         Contains upper limit of atmospheric layers does not validate in [km]. By
         default is []
+    dHmax: float
+        Maximum atmospheric layer depth, in km, to interpolate with missing data
 
     Returns
     -------
@@ -215,8 +222,6 @@ def interp_serie(z_intp, z, serie, type_intp='linear', prof_val=0, Hinf=[], Hsup
     
     
     # If profile is validated, to interpolate data
-    
-    dHmax = 1
     
     # copy original data to interpolate
     z_cp = z.copy()
@@ -315,7 +320,6 @@ def df_to_csv(df_interp, launch_datetime, z0):
         
         
     
-    #pd.DataFrame(hd).to_csv(path_fn, mode='w', sep='\t', header=False, index=False)
     # Save headers for variables
     pd.DataFrame([hd1, hd2]).to_csv(path_fn, mode='a', sep='\t', header=False, index=False)
     
@@ -344,11 +348,6 @@ df_validate = pd.read_csv(fn_validate, delimiter=';', index_col=0, parse_dates=T
 dates = df_validate.index
 
 
-# Year to interpolate. Is required that years to interpolate are validated or 
-# not in RapaNui_dates_valid.csv
-yi = 1995
-yf = 2012
-
 # Constants
 R=8.314472; #(J/(mol K))
 Cp=29.19; #(J/(mol K))
@@ -360,40 +359,52 @@ z = np.arange(0,35.1, 0.1)
 # Output filename with all soundings interpolated
 fn_clear_all = os.path.join(path, 'RapaNui_all_clear.csv')
 
+
 # Make dataframe for data complete
 dfold_clear = pd.DataFrame()
+
 
 for date in dates:
     
     # ignore warnings
     warnings.filterwarnings("ignore")
     
-    if date.year in range(yi, yf+1):
-        print(date)
-        
-        # Extract info about validation profiles at date
-        val_info = df_validate.loc[date]
-        # Ozone
-        val_O3 = val_info.Valid_O3
-        Hinf_O3 = val_info.Height_inf_O3
-        Hsup_O3 = val_info.Height_sup_O3
-        # Temperature
-        val_T = val_info.Valid_T
-        Hinf_T = val_info.Height_inf_T
-        Hsup_T = val_info.Height_sup_T
-        # Pressure
-        val_P = val_info.Valid_P
-        Hinf_P = val_info.Height_inf_P
-        Hsup_P = val_info.Height_sup_P
-        # Relative Humidity
-        val_RH = val_info.Valid_RH
-        Hinf_RH = val_info.Height_inf_RH
-        Hsup_RH = val_info.Height_sup_RH
-        # Winds
-        val_V = val_info.Valid_V
-        Hinf_V = val_info.Height_inf_V
-        Hsup_V = val_info.Height_sup_V
-        
+    print(date)
+    
+    # Extract info about validation profiles at date
+    val_info = df_validate.loc[date]
+    # Ozone
+    val_O3 = val_info.Valid_O3
+    Hinf_O3 = val_info.Height_inf_O3
+    Hsup_O3 = val_info.Height_sup_O3
+    # Temperature
+    val_T = val_info.Valid_T
+    Hinf_T = val_info.Height_inf_T
+    Hsup_T = val_info.Height_sup_T
+    # Pressure
+    val_P = val_info.Valid_P
+    Hinf_P = val_info.Height_inf_P
+    Hsup_P = val_info.Height_sup_P
+    # Relative Humidity
+    val_RH = val_info.Valid_RH
+    Hinf_RH = val_info.Height_inf_RH
+    Hsup_RH = val_info.Height_sup_RH
+    # Winds
+    val_V = val_info.Valid_V
+    Hinf_V = val_info.Height_inf_V
+    Hsup_V = val_info.Height_sup_V
+    
+    
+    # If the profile is not repeated, then interpolate
+    if val_O3 != -1:
+    
+        # Correct validate profile value according to validity of ozone profile
+        # if ozone profile is not validated, the other variables will not be valid.
+        if val_O3 == 0:
+            val_T = 0
+            val_P = 0
+            val_RH = 0
+            val_V = 0
         
         # Correct to list
         # Ozone
@@ -412,7 +423,7 @@ for date in dates:
         if np.isnan(Hinf_V): Hinf_V = []; Hsup_V = []
         else: Hinf_V = [Hinf_V]; Hsup_V = [Hsup_V]
         
-
+    
         # Extract data at date
         df = dfold.loc[date]
         
@@ -422,7 +433,7 @@ for date in dates:
             pass
         else:
             df = remov_desc(df)
-
+    
         
         #Lecture of Data
         GPHeight = df.GPHeight.values*10**-3
@@ -465,7 +476,7 @@ for date in dates:
         Mixing_Ratio = 1e3*(RelativeHumidity/100)*Satured_Mixing_Ratio
         
         Mixing_Ratio_interp = interp_serie(z, GPHeight, Mixing_Ratio, prof_val=val_W, Hinf=Hinf_W, Hsup=Hsup_W)
-
+    
         
         # Equivalent Potential Temperature (Stull 1988, p.546)
         val_Thetae = min(val_T, val_P, val_RH)
@@ -478,15 +489,15 @@ for date in dates:
         
         # Winds to interpolate
         # CAlculate zonal and meridional components
-        U = - Wind_Speed*np.cos((np.pi/180)*Wind_Direction) 
-        V = - Wind_Speed*np.sin((np.pi/180)*Wind_Direction)
+        U = - Wind_Speed*np.sin((np.pi/180)*Wind_Direction) 
+        V = - Wind_Speed*np.cos((np.pi/180)*Wind_Direction)
         
         U_interp = interp_serie(z, GPHeight, U, prof_val=val_V, Hinf=Hinf_V, Hsup=Hsup_V)
         V_interp = interp_serie(z, GPHeight, V, prof_val=val_V, Hinf=Hinf_V, Hsup=Hsup_V)
         
         # Calculate magnitude and direction
         Wind_Speed_interp = np.sqrt(U_interp**2 + V_interp**2)
-        Wind_Direction_interp = np.arctan2(V_interp, U_interp) * (180/np.pi)
+        Wind_Direction_interp = np.arctan2(-U_interp, -V_interp) * (180/np.pi)
         Wind_Direction_interp[Wind_Direction_interp < 0] = Wind_Direction_interp[Wind_Direction_interp<0] + 360
         
         

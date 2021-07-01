@@ -68,6 +68,8 @@ image_filename_cr2_celeste = 'cr2_celeste.png'
 encoded_image_cr2_celeste = base64.b64encode(open(image_filename_cr2_celeste, 'rb').read()).decode('ascii')
 image_filename_GWA = 'gaw_logo.png'
 encoded_image_GWA = base64.b64encode(open(image_filename_GWA, 'rb').read()).decode('ascii')
+image_filename_Rapa_Nui_Map = 'Easter-Island-Map.png'
+encoded_image_Rapa_Nui_Map = base64.b64encode(open(image_filename_Rapa_Nui_Map, 'rb').read()).decode('ascii')
 ###############diccionario con fechas##########################################
 df_year =  ozonosondes_data.iloc[~ozonosondes_data.index.year.duplicated(keep='first')].index.year
 dates = {str(i):{str(j): ozonosondes_data[str(i)+'-'+str(j)][~ozonosondes_data[str(i)+'-'+str(j)].index.day.duplicated(keep='first')].index.day 
@@ -88,25 +90,7 @@ fig.update_layout(height=200, margin={"r":0,"t":0,"l":0,"b":0},
             paper_bgcolor='#f6f6f6')
 
 
-d = {'City':'Rapa Nui', 'lat' : -27.16, 'lon': -109.43 , 'State': 'Polinesia' ,'info': 'Observatorio Rapa Nui','MSL':157}
-cites = pd.DataFrame(data=d, index = [0])
 
-fig2 = px.scatter_mapbox(cites, lat="lat", lon="lon", hover_name="City", hover_data=["State", "info"],
-                        color_discrete_sequence=["black"], size='MSL' , size_max=12 ,zoom=7, height=300 )
-fig2.update_layout(
-    mapbox_style="white-bg",
-    mapbox_layers=[
-        {
-            "below": 'traces',
-            "sourcetype": "raster",
-            "sourceattribution": "United States Geological Survey",
-            "source": [
-                "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
-            ]
-        }
-      ])
-fig2.update_layout(margin={"r":10,"t":0,"l":10,"b":0})
-fig2.update_mapboxes(bearing=25, pitch = 60)
 
 
 
@@ -191,7 +175,7 @@ def Web_Language(Switch_Lang):
         className='custom-tabs-container',
         children=[
             dcc.Tab(
-                label='Information',
+                label='Presentation',
                 value='tab-1',
                 className='custom-tab',style=tab_style, selected_style=tab_selected_style,
                 selected_className='custom-tab--selected'
@@ -208,7 +192,7 @@ def Web_Language(Switch_Lang):
                 selected_className='custom-tab--selected'
             ),
             dcc.Tab(
-                label='Tab four',
+                label='Methods',
                 value='tab-4',
                 className='custom-tab',style=tab_style, selected_style=tab_selected_style,
                 selected_className='custom-tab--selected'
@@ -306,7 +290,8 @@ def render_content(tab, Switch_Lang):
                                     html.H1("Map", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}), 
                                     dcc.Graph(figure=fig) , 
                                     html.H1("Interactive map", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),                                     
-                                    dcc.Graph(figure=fig2)], 
+                                     html.Img(src='data:image/png;base64,{}'.format(encoded_image_Rapa_Nui_Map), 
+                                   style={'height':'45%', 'width':'450px','margin-right':'75px' ,'margin-left':'75px', 'margin-top':'75px', 'border': '0px solid #0668a1', 'border-radius': '10px'})], 
                                     
                                      style={'display': 'inline-block', 'float':'right', 'width': '50%'})
                                                  ], style={'backgroundColor': '#f6f6f6', 'height':'700px'})]
@@ -364,8 +349,9 @@ def render_content(tab, Switch_Lang):
                                                  style={'font-size':'8px', 'margin-left':'75px'}),
                                     html.H1("Mapa", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}), 
                                     dcc.Graph(figure=fig),
-                                    html.H1("Mapa Interactivo", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),                                     
-                                    dcc.Graph(figure=fig2)],                                                  
+                                    html.H1("", style={'text-align': 'center','font-family': 'Abel','font-size': '28px','color': '#0668a1','backgroundColor': '#f6f6f6'}),                                     
+                                     html.Img(src='data:image/png;base64,{}'.format(encoded_image_Rapa_Nui_Map), 
+                                   style={'height':'45%', 'width':'450px','margin-right':'75px' ,'margin-left':'75px', 'margin-top':'75px', 'border': '0px solid #0668a1', 'border-radius': '10px'})],                                                  
                                      style={'display': 'inline-block', 'float':'right', 'width': '50%', 'backgroundColor': '#f6f6f6'})
                                           ], style={'backgroundColor': '#f6f6f6', 'height':'700px'})]
 #####################################################################################

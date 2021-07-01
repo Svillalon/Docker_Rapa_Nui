@@ -5,15 +5,16 @@ Created on Thu Jan 21 13:53:36 2021
 
 @author: charlie opazo and sebastian villalon
 
-Reading and saving Rapa Nui ozonesounding data. Except for removing negative values,
-and strange values, no cleansing or resampling is applied to the data.
+Reading and saving Rapa Nui ozonesounding data. Except for removing negative 
+values, no cleansing or resampling is applied to the data.
 
-Read all sounding data and return one file in .csv with all soundings.
+Read data from CR2 database and GAW database. This script returns one file in 
+.csv, 'RapaNui_GAW_ozonesondes.csv', with all soundings in GAW database, and 
+one file .csv, 'RapaNui_CR2_ozonesondes.csv', with all soundings in CR2 database.
 
-Generate one file .csv for to save info about ozone profiles validation
-
-Data for the period 1995-2019 was downloaded from https://woudc.org/
-This set corresponds to sounding data per launch in Eastern Island station
+CR2 database for the period 1994-2014 was downloaded from http://www.cr2.cl/datos-ozonosonda/
+GAW database for the period 1995-2020 was downloaded from https://woudc.org/
+This sets correspond to sounding data per launch in Eastern Island station
 
 
 """
@@ -27,9 +28,10 @@ import csv
 import chardet
 
 
-def lecture(filename):
+def lecture_GAW(filename):
     """
-    Read individual sounding file and return dataframe with:
+    Read individual sounding file obtained from GAW data base and return 
+    dataframe with:
         - datetime launch [datetime format]
         - geopotential height [m]
         - pressure [hPa]
@@ -46,7 +48,7 @@ def lecture(filename):
 
     Returns
     -------
-    dataframes : DataFramr
+    dataframes : DataFrame
         Datraframe with sounding data.
 
     """
@@ -81,9 +83,9 @@ def lecture(filename):
         rows = []
         rows.extend(range(iline))
         rows.extend(range(iline+1, iline+3))
-        dataframes = pd.read_csv(filename, skiprows=rows, encoding=enc)
+        dataframes = pd.read_csv(filename, skiprows=rows, encoding=enc, float_precision='round_trip')
     else:
-        dataframes = pd.read_csv(filename, skiprows=iline, na_values= ['///'])
+        dataframes = pd.read_csv(filename, skiprows=iline, na_values= ['///'], float_precision='round_trip')
     
     # Crear vector de tiempo, con el tiempo de lanzamiento para agregar index
     # a dateframes
@@ -123,86 +125,131 @@ def lecture(filename):
 
 
 
+def lecture_CR2(filename):
+    """
+    Read individual sounding file obtained from CR2 database and return 
+    dataframe with:
+        - datetime launch [datetime format]
+        - geopotential height [m]
+        - pressure [hPa]
+        - temperature [°C]
+        - relative humidity [%]
+        - ozone partial pressure [mPa]
+        - wind speed [m/s]
+        - wind direction [°]
+
+    Parameters
+    ----------
+    filename : str
+        Path + filename soundig data.
+
+    Returns
+    -------
+    dataframes : DataFrame
+        Datraframe with sounding data.
+
+    """
+    
+    
+    df = pd.read_csv(filename, skiprows=list(range(19))+[20], sep='\s+', 
+                     na_values=9000, float_precision='round_trip')
+    
+    
+    ti_df = pd.read_csv(filename,nrows=1, skiprows=7, delimiter=":", header=None, parse_dates=[1])
+    ti = ti_df[1][0]
+    
+    # Crear vector de tiempo, con el tiempo de lanzamiento para agregar index
+    # a dateframes
+    N = df.shape
+    time = []
+    for i in range(N[0]):
+        time.append(ti)
+        
+    df.index = time
+    df.index.rename('Datetime', inplace=True)
+    
+    WSpeed = np.sqrt(df['u']**2 + df['v']**2)
+    WDir = np.arctan2(-df['u'], -df['v']) * (180/np.pi)
+    WDir[WDir<0] = WDir[WDir<0] + 360
+    WDir[WDir==-0] = 0
+    
+    df['WindSpeed'] = WSpeed
+    df['WindDirection'] = WDir
+    
+    # Cambiar unidades a m y °C
+    df['Temp'] = df['Temp'] - 273.15
+    df['Alt'] = 1000 * df['Alt']
+    
+    # Extraer columnas necesarias y renombrarlas
+    var_names = ['Alt', 'Press', 'Temp', 'RH', 'O3', 'WindSpeed', 'WindDirection']
+    df = df[var_names]
+    df.rename(columns={'Alt':'GPHeight', 'Press':'Pressure', 'Temp':'Temperature',
+                       'RH':'RelativeHumidity', 'O3':'O3PartialPressure'},
+              inplace=True)
+    
+    return df
+
+
+
+
 
 # Get path
 path = os.getcwd()# use your path
 
-# Cargar los nombres de todos los archivos en las carpetas
-filenames = []
-for year in range(1995, 2020):
-    fns = os.path.join(path, "Data", str(year), str(year)+"*.csv")
-    filenames += glob(fns)
+# Cargar los nombres de todos los archivos en las carpetas de la base de datos
+# de GAW
+filenames_GAW = []
+for year in range(1995, 2021):
+    # Path de carpeta de año en base datos de GAW
+    fns = os.path.join(path, "Data", "DB-GAW", str(year), str(year)+"*.csv")
+    filenames_GAW += glob(fns)
 
 
 # cargar todos los datos de ozonosondas en mismo dateframe
-dfold_aux = pd.DataFrame()
-for filename in filenames:
-    df = lecture(filename)
-    dfold_aux = pd.concat([dfold_aux, df])
+dfold_GAW_aux = pd.DataFrame()
+for filename in filenames_GAW:
+    df = lecture_GAW(filename)
+    dfold_GAW_aux = pd.concat([dfold_GAW_aux, df])
 
 # Datetime de lanzamiento
-dates_aux = dfold_aux.index.drop_duplicates()
-dates_sort = dates_aux.sort_values()
+dates_GAW = dfold_GAW_aux.index.drop_duplicates()
+dates_GAW = dates_GAW.sort_values()
 
 # sort dataframe by launch datetime
-dfold = pd.DataFrame()
-for dat in dates_sort:
-    dfold = pd.concat([dfold, dfold_aux.loc[dat]])
+dfold_GAW = pd.DataFrame()
+for dat in dates_GAW:
+    dfold_GAW = pd.concat([dfold_GAW, dfold_GAW_aux.loc[dat]])
     
 # remove negative values in O3PartialPressure
-dfold.O3PartialPressure[dfold.O3PartialPressure<0] = np.nan
+dfold_GAW.O3PartialPressure[dfold_GAW.O3PartialPressure<0] = np.nan
 
 # Save all profiles in one file
-out_allsondes = os.path.join(path, 'RapaNui_all_ozonesondes.csv')
-dfold.to_csv(out_allsondes, sep=';')
+out_GAW = os.path.join(path, 'RapaNui_GAW_ozonesondes.csv')
+dfold_GAW.to_csv(out_GAW, sep=';')
 
 
 
 
-# Generar archivo que guarda fechas de lanzamiento, con formato para indicar
-# lanzamientos validos, comentarios y rangos de alturas a eliminar. Actualiza
-# el archivo si existe y tiene nuevas fechas, y si ya tiene las fechas cargadas
-# no modifica el archivo existente
 
-# Datetime de lanzamiento
-dates = dates_sort
-# Genera dateframe para guardar datetimes en formato para validarlos
-df_valid_new = pd.DataFrame(data={'Valid_O3':np.nan*np.zeros(len(dates)), 
-                                  'Height_inf_O3' : np.nan*np.zeros(len(dates)), 
-                                  'Height_sup_O3' : np.nan*np.zeros(len(dates)), 
-                                  'Valid_T':np.nan*np.zeros(len(dates)), 
-                                  'Height_inf_T' : np.nan*np.zeros(len(dates)), 
-                                  'Height_sup_T' : np.nan*np.zeros(len(dates)), 
-                                  'Valid_P':np.nan*np.zeros(len(dates)), 
-                                  'Height_inf_P' : np.nan*np.zeros(len(dates)), 
-                                  'Height_sup_P' : np.nan*np.zeros(len(dates)), 
-                                  'Valid_RH':np.nan*np.zeros(len(dates)), 
-                                  'Height_inf_RH' : np.nan*np.zeros(len(dates)), 
-                                  'Height_sup_RH' : np.nan*np.zeros(len(dates)), 
-                                  'Valid_V':np.nan*np.zeros(len(dates)), 
-                                  'Height_inf_V' : np.nan*np.zeros(len(dates)), 
-                                  'Height_sup_V' : np.nan*np.zeros(len(dates)), 
-                                  'Comments' : np.nan*np.zeros(len(dates))}, 
-                            index=dates)
-# Filename
-filename_df_valid = os.path.join(path, 'RapaNui_dates_valid.csv')
-# Verifica si archivo existe o no
-if os.path.isfile(filename_df_valid):
-    df_valid_old = pd.read_csv(filename_df_valid, delimiter=';', index_col=0, 
-                               parse_dates=True)
-    if ~df_valid_new.index.equals(df_valid_old.index):
-        df_valid = pd.concat([df_valid_old, df_valid_new])
-        df_valid = df_valid.iloc[~df_valid.index.duplicated(keep='first')]
-        df_valid.sort_index(inplace=True)
-        df_valid.to_csv(filename_df_valid, sep=';')
-else:
-    df_valid_new.to_csv(filename_df_valid, sep=';')
+# Cargar los nombres de todos los archivos en la carpeta DB-CR2
+path_CR2 = os.path.join(path, "Data", "DB-CR2", "*.dat")
+filenames_CR2 = glob(path_CR2)
 
 
+dfold_CR2_aux = pd.DataFrame()
+for filename in filenames_CR2:
+    df = lecture_CR2(filename)
+    dfold_CR2_aux = pd.concat([dfold_CR2_aux, df])
 
 
-# Generar archivo con fechas en formato %yy %mm %dd %HH %MM´ para utilizar en 
-# codigo generador de trayectores
-filename_datestr = os.path.join(path, 'RapaNui_DatesStr_hysplit.csv')
-dates_str = pd.DataFrame(dates.strftime('%y %m %d %H %M'))
-dates_str.to_csv(filename_datestr, header=False,index=False)
+dates_CR2 = dfold_CR2_aux.index.drop_duplicates()
+dates_CR2 = dates_CR2.sort_values()
+
+# sort dataframe by launch datetime
+dfold_CR2 = pd.DataFrame()
+for dat in dates_CR2:
+    dfold_CR2 = pd.concat([dfold_CR2, dfold_CR2_aux.loc[dat]])
+
+out_CR2 = os.path.join(path, 'RapaNui_CR2_ozonesondes.csv')
+dfold_CR2.to_csv(out_CR2, sep=';')
+

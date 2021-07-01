@@ -104,6 +104,12 @@ def trend(radio_trend, radio_height, ozonosondes_data):
     s    = df_m.O3_ppbv.values 
     s_df = df_m.O3_ppbv
     s_df = s_df.resample('M').mean().fillna(s_df.mean())
+    if radio_height ==1:
+    	scale = [0,60]
+    elif radio_height ==6:
+        scale = [10,100]
+    elif radio_height ==15:
+        scale = [40,200]    	 
     ###################
     if radio_trend == 'Lamsal':        
         model_trend =  lamsal_trend(s)
@@ -141,7 +147,7 @@ def trend(radio_trend, radio_height, ozonosondes_data):
 
     fig.add_trace(go.Scatter( 
                     x=df_m.index[0:1], 
-                    y= [57 , 57] , #df_m[0:1]*2.0
+                    y= [df_m["O3_ppbv"].quantile(0.99)*0.7 , df_m["O3_ppbv"].quantile(0.99)*0.7] , #df_m[0:1]*2.0
                     mode='text', 
                     marker=dict(size= 6, color='black'),
                     text=["Decadal Trend= " + str(round(model_trend[1]*10*12,1)) + 'ppbv   Promedio= '+ str(round(df_m["O3_ppbv"].mean(),1)) + " [ppbv]"],
@@ -157,7 +163,7 @@ def trend(radio_trend, radio_height, ozonosondes_data):
     #        title_font_color="red",        
             title_font_size=30,
             yaxis=dict(
-                range=[0, 65]),
+                range=scale),
             margin=dict(t=0, b=0, l=0, r = 0),
             title_font_color = 'dimgray',
             plot_bgcolor='#f6f6f6',
